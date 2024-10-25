@@ -18,17 +18,10 @@ do
     continue
   fi
 
-  if ! $($PSQL "SELECT 1 FROM teams WHERE name='$WINNER' LIMIT 1;")
-  then
-    echo "$($PSQL "INSERT INTO teams(name) VALUES('$WINNER');")"
-  fi
-  WINNER_ID="$($PSQL "SELECT team_id")"
-
-  if ! $($PSQL "SELECT 1 FROM teams WHERE name='$OPPONENT' LIMIT 1;")
-  then
-    echo "$($PSQL "INSERT INTO teams(name) VALUES('$OPPONENT');")"
-  fi
+  echo "$($PSQL "INSERT INTO teams(name) VALUES('$WINNER'), ('$OPPONENT') ON CONFLICT (name) DO NOTHING;")"
+  WINNER_ID="$($PSQL "SELECT team_id FROM teams WHERE name='$WINNER'")"
+  OPPONENT_ID="$($PSQL "SELECT team_id FROM teams WHERE name='$OPPONENT'")"
 
   echo "$($PSQL "INSERT INTO games(year, round, winner_id, opponent_id, winner_goals, opponent_goals) 
-  VALUES ($YEAR, '$ROUND', '$OPPONENT', $WINNER_GOALS, $OPPONENT_GOALS);")"
+  VALUES ($YEAR, '$ROUND', '$WINNER_ID', '$OPPONENT_ID', $WINNER_GOALS, $OPPONENT_GOALS);")"
 done
